@@ -1,16 +1,16 @@
-# ---------------------------------------------------------------
+# ----------------------------------------------------------------
 # Jekyll & Global Configuration
 ## Docs: https://jekyllrb.com/docs/configuration/
-# ---------------------------------------------------------------
-
+# ----------------------------------------------------------------
 # Site
-title: NexT
+title: Ekin123 の Blog
 subtitle:
 description:
-author: John Doe
+author: Ekin123
 # Support language: de, en, fr-FR, id, ja, ko, pt-BR, pt, ru, zh-Hans, zh-hk, zh-tw
-language: en
+language: zh-Hans
 date_format: '%Y-%m-%d'
+future: true
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com' and baseurl as '/child'
@@ -736,3 +736,4 @@ images: assets/images
 
 # Theme version
 version: 5.1.1
+
