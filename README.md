@@ -1,2 +1,1 @@
-# ekin12345.github.io
-website
+This is Ekin123's Blog.
