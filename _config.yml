@@ -1,0 +1,5 @@
+title: Ekin123's Website
+description: Ekin123's Personal Blog,Invent,Game,...
+baseurl: "/"
+url: "https://ekin12345.github.io"
+permalink: /:year/:month/:day/:title/
