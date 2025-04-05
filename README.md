@@ -1,1 +1,1 @@
-This is Ekin123's Blog.
+This is Ekin123's Website.
