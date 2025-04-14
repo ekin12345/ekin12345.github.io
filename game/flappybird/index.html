@@ -42,10 +42,11 @@
         let isGameOver = false;
 
         const pipeWidth = 40;
-        const pipeGap = 250;  // 更新后的管道间距
+        const pipeGap = 350;  // 更新后的管道间距
         let pipes = [];
-        let pipeFrequency = 180;
+        let pipeFrequency = 150;
         let frame = 0;
+	let speed = 4;
 
         // 地面位置和高度
         const groundHeight = 50;
@@ -102,7 +103,7 @@
                 ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
 
                 // 更新管道位置
-                pipe.x -= 2;
+                pipe.x -= speed;
 
                 // 删除离开屏幕的管道
                 if (pipe.x + pipeWidth <= 0) {
@@ -165,6 +166,7 @@ function checkCollisions() {
 
         // 更新游戏画面
         function updateGame() {
+
             if (isGameOver) {
                 cancelAnimationFrame(animationFrameId); // 停止动画
                 ctx.fillStyle = "black";
