@@ -1,193 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird Game</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #70c5ce;
-        }
-        canvas {
-            display: block;
-            margin: 0 auto;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Flappy Bird Game</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background-color: #70c5ce;
+		}
+		canvas {
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
 </head>
 <body>
 	<a href="/" style="position: fixed;">
 		<img src="https://ekin12345.github.io/totem.jpg" style="width: 30px;height: 30px;">
 	</a>
-    <canvas id="gameCanvas"></canvas>
-    <script>
-        // 获取 canvas 元素
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+	<canvas id="gameCanvas"></canvas>
+	<script>
+		// 获取 canvas 元素
+		const canvas = document.getElementById("gameCanvas");
+		const ctx = canvas.getContext("2d");
 
-        // 设置画布尺寸
-        canvas.width = 1250;
-        canvas.height = 750;
+		// 设置画布尺寸
+		canvas.width = 1250;
+		canvas.height = 750;
 
-        // 游戏变量
-        const birdWidth = 20;
-        const birdHeight = 20;
-        let birdX = 50;
-        let birdY = canvas.height / 3;
-        let birdVelocity = 0;
-        let gravity = 0.5;
-        let lift = -10;
-        let isGameOver = false;
+		// 游戏变量
+		const birdWidth = 20;
+		const birdHeight = 20;
+		let birdX = 50;
+		let birdY = canvas.height / 3;
+		let birdVelocity = 0;
+		let gravity = 0.5;
+		let lift = -10;
+		let isGameOver = false;
 
-        const pipeWidth = 40;
-        const pipeGap = 350;  // 更新后的管道间距
-        let pipes = [];
-        let pipeFrequency = 150;
-        let frame = 0;
+		const pipeWidth = 40;
+		const pipeGap = 350;  // 更新后的管道间距
+		let pipes = [];
+		let pipeFrequency = 150;
+		let frame = 0;
 	let speed = 4;
 
-        // 地面位置和高度
-        const groundHeight = 50;
-        let groundX1 = 0;
-        let groundX2 = canvas.width;
+		// 地面位置和高度
+		const groundHeight = 50;
+		let groundX1 = 0;
+		let groundX2 = canvas.width;
 
-        let animationFrameId = null; // 用来存储动画帧ID
+		let animationFrameId = null; // 用来存储动画帧ID
 
-        // 监听鼠标按下事件
-        canvas.addEventListener("mousedown", () => {
-            if (!isGameOver) {
-                birdVelocity = lift; // 鼠标按下时让小鸟向上飞
-            } else {
-                // 重新开始游戏
-                isGameOver = false;
-                birdY = canvas.height / 3;
-                birdVelocity = 0;
-                pipes = [];
-                frame = 0;
-                updateGame(); // 重新启动游戏
-            }
-        });
+		// 监听鼠标按下事件
+		canvas.addEventListener("mousedown", () => {
+			if (!isGameOver) {
+				birdVelocity = lift; // 鼠标按下时让小鸟向上飞
+			} else {
+				// 重新开始游戏
+				isGameOver = false;
+				birdY = canvas.height / 3;
+				birdVelocity = 0;
+				pipes = [];
+				frame = 0;
+				updateGame(); // 重新启动游戏
+			}
+		});
 
-        // 画小鸟
-        function drawBird() {
-            birdVelocity += gravity; // 增加重力
-            birdY += birdVelocity; // 更新小鸟的Y坐标
+		// 画小鸟
+		function drawBird() {
+			birdVelocity += gravity; // 增加重力
+			birdY += birdVelocity; // 更新小鸟的Y坐标
 
-            ctx.fillStyle = "yellow";
-            ctx.fillRect(birdX, birdY, birdWidth, birdHeight);
-        }
+			ctx.fillStyle = "yellow";
+			ctx.fillRect(birdX, birdY, birdWidth, birdHeight);
+		}
 
-        // 生成管道
-        function generatePipes() {
-            if (frame % pipeFrequency === 0) {
-                const pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
-                pipes.push({
-                    x: canvas.width,
-                    topHeight: pipeHeight,
-                    bottomHeight: canvas.height - pipeGap - pipeHeight
-                });
-            }
-            frame++;
-        }
+		// 生成管道
+		function generatePipes() {
+			if (frame % pipeFrequency === 0) {
+				const pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
+				pipes.push({
+					x: canvas.width,
+					topHeight: pipeHeight,
+					bottomHeight: canvas.height - pipeGap - pipeHeight
+				});
+			}
+			frame++;
+		}
 
-        // 画管道
-        function drawPipes() {
-            pipes.forEach((pipe, index) => {
-                // 绘制上方管道
-                ctx.fillStyle = "green";
-                ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+		// 画管道
+		function drawPipes() {
+			pipes.forEach((pipe, index) => {
+				// 绘制上方管道
+				ctx.fillStyle = "green";
+				ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
 
-                // 绘制下方管道
-                ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
+				// 绘制下方管道
+				ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
 
-                // 更新管道位置
-                pipe.x -= speed;
+				// 更新管道位置
+				pipe.x -= speed;
 
-                // 删除离开屏幕的管道
-                if (pipe.x + pipeWidth <= 0) {
-                    pipes.splice(index, 1);
-                }
-            });
-        }
+				// 删除离开屏幕的管道
+				if (pipe.x + pipeWidth <= 0) {
+					pipes.splice(index, 1);
+				}
+			});
+		}
 
-        // 绘制地面
-        function drawGround() {
-            ctx.fillStyle = "brown";  // 地面颜色
+		// 绘制地面
+		function drawGround() {
+			ctx.fillStyle = "brown";  // 地面颜色
 
-            // 绘制第一个地面
-            ctx.fillRect(groundX1, canvas.height - groundHeight, canvas.width, groundHeight);
+			// 绘制第一个地面
+			ctx.fillRect(groundX1, canvas.height - groundHeight, canvas.width, groundHeight);
 
-            // 绘制第二个地面
-            ctx.fillRect(groundX2, canvas.height - groundHeight, canvas.width, groundHeight);
+			// 绘制第二个地面
+			ctx.fillRect(groundX2, canvas.height - groundHeight, canvas.width, groundHeight);
 
-            // 让地面循环滚动
-            groundX1 -= 2;
-            groundX2 -= 2;
+			// 让地面循环滚动
+			groundX1 -= 2;
+			groundX2 -= 2;
 
-            // 如果第一个地面完全离开屏幕，重置其位置
-            if (groundX1 <= -canvas.width) {
-                groundX1 = canvas.width;
-            }
+			// 如果第一个地面完全离开屏幕，重置其位置
+			if (groundX1 <= -canvas.width) {
+				groundX1 = canvas.width;
+			}
 
-            // 如果第二个地面完全离开屏幕，重置其位置
-            if (groundX2 <= -canvas.width) {
-                groundX2 = canvas.width;
-            }
-        }
+			// 如果第二个地面完全离开屏幕，重置其位置
+			if (groundX2 <= -canvas.width) {
+				groundX2 = canvas.width;
+			}
+		}
 
-        // 碰撞检测
-        // 修改后的碰撞检测函数示例
+		// 碰撞检测
+		// 修改后的碰撞检测函数示例
 function checkCollisions() {
   // 地面碰撞检测（保持原逻辑）
   if (birdY + birdHeight > canvas.height - groundHeight) {
-    isGameOver = true;
+	isGameOver = true;
   }
 
   // 管道碰撞检测优化
   pipes.forEach(pipe => {
-    // 缩小碰撞区域（示例：左右各留5px空隙，上下各留10px空隙）
-    const pipeCollisionLeft = pipe.x;
-    const pipeCollisionRight = pipe.x + pipeWidth;
-    const topPipeCollisionBottom = pipe.topHeight;
-    const bottomPipeCollisionTop = canvas.height - pipe.bottomHeight + 0;
+	// 缩小碰撞区域（示例：左右各留5px空隙，上下各留10px空隙）
+	const pipeCollisionLeft = pipe.x;
+	const pipeCollisionRight = pipe.x + pipeWidth;
+	const topPipeCollisionBottom = pipe.topHeight;
+	const bottomPipeCollisionTop = canvas.height - pipe.bottomHeight + 0;
 
-    // 检测X轴重叠
-    if (birdX + birdWidth > pipeCollisionLeft && birdX < pipeCollisionRight) {
-      // 检测Y轴碰撞（顶部管道底部或底部管道顶部）
-      if (birdY < topPipeCollisionBottom || birdY + birdHeight > bottomPipeCollisionTop) {
-        isGameOver = true;
-      }
-    }
+	// 检测X轴重叠
+	if (birdX + birdWidth > pipeCollisionLeft && birdX < pipeCollisionRight) {
+	  // 检测Y轴碰撞（顶部管道底部或底部管道顶部）
+	  if (birdY < topPipeCollisionBottom || birdY + birdHeight > bottomPipeCollisionTop) {
+		isGameOver = true;
+	  }
+	}
   });
 }
 
 
-        // 更新游戏画面
-        function updateGame() {
+		// 更新游戏画面
+		function updateGame() {
 
-            if (isGameOver) {
-                cancelAnimationFrame(animationFrameId); // 停止动画
-                ctx.fillStyle = "black";
-                ctx.font = "30px Courier New";
-                ctx.fillText("Game Over", canvas.width / 4, canvas.height / 2);
-                ctx.fillText("Click to restart", canvas.width / 4, canvas.height / 2 + 40);
-                return;
-            }
+			if (isGameOver) {
+				cancelAnimationFrame(animationFrameId); // 停止动画
+				ctx.fillStyle = "black";
+				ctx.font = "30px Courier New";
+				ctx.fillText("Game Over", canvas.width / 4, canvas.height / 2);
+				ctx.fillText("Click to restart", canvas.width / 4, canvas.height / 2 + 40);
+				return;
+			}
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // 清空画布
-            drawBird();
-            generatePipes();
-            drawPipes();
-            drawGround();
-            checkCollisions();
+			ctx.clearRect(0, 0, canvas.width, canvas.height); // 清空画布
+			drawBird();
+			generatePipes();
+			drawPipes();
+			drawGround();
+			checkCollisions();
 
-            animationFrameId = requestAnimationFrame(updateGame); // 继续更新游戏
-        }
+			animationFrameId = requestAnimationFrame(updateGame); // 继续更新游戏
+		}
 
-        // 启动游戏
-        updateGame();
-    </script>
+		// 启动游戏
+		updateGame();
+	</script>
 </body>
 </html>
