@@ -243,6 +243,7 @@
 				document.getElementById("playerSymbol").className = this.turn === 1 ? "text-blue-600" : "text-red-600";
 				const t = document.getElementById("gameStatus");
 				if (this.gameOver) return;
+				t.className = "text-gray-600";
 				t.textContent = this.placeUnit !== -1 ? `必须在${this.placeUnit + 1}区` : "可在任意区"; this.highlightAreas();
 			}
 			highlightAreas() {
