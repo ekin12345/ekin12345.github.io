@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Flappy Bird Game</title>
+	<link rel="icon" type="image/x-icon" href="/totem.jpg">
 	<style>
 		body {
 			margin: 0;
@@ -11,12 +13,14 @@
 			overflow: hidden;
 			background-color: #70c5ce;
 		}
+
 		canvas {
 			display: block;
 			margin: 0 auto;
 		}
 	</style>
 </head>
+
 <body>
 	<a href="/" style="position: fixed;">
 		<img src="https://ekin12345.github.io/totem.jpg" style="width: 30px;height: 30px;">
@@ -46,7 +50,7 @@
 		let pipes = [];
 		let pipeFrequency = 150;
 		let frame = 0;
-	let speed = 4;
+		let speed = 4;
 
 		// 地面位置和高度
 		const groundHeight = 50;
@@ -139,29 +143,29 @@
 
 		// 碰撞检测
 		// 修改后的碰撞检测函数示例
-function checkCollisions() {
-  // 地面碰撞检测（保持原逻辑）
-  if (birdY + birdHeight > canvas.height - groundHeight) {
-	isGameOver = true;
-  }
+		function checkCollisions() {
+			// 地面碰撞检测（保持原逻辑）
+			if (birdY + birdHeight > canvas.height - groundHeight) {
+				isGameOver = true;
+			}
 
-  // 管道碰撞检测优化
-  pipes.forEach(pipe => {
-	// 缩小碰撞区域（示例：左右各留5px空隙，上下各留10px空隙）
-	const pipeCollisionLeft = pipe.x;
-	const pipeCollisionRight = pipe.x + pipeWidth;
-	const topPipeCollisionBottom = pipe.topHeight;
-	const bottomPipeCollisionTop = canvas.height - pipe.bottomHeight + 0;
+			// 管道碰撞检测优化
+			pipes.forEach(pipe => {
+				// 缩小碰撞区域（示例：左右各留5px空隙，上下各留10px空隙）
+				const pipeCollisionLeft = pipe.x;
+				const pipeCollisionRight = pipe.x + pipeWidth;
+				const topPipeCollisionBottom = pipe.topHeight;
+				const bottomPipeCollisionTop = canvas.height - pipe.bottomHeight + 0;
 
-	// 检测X轴重叠
-	if (birdX + birdWidth > pipeCollisionLeft && birdX < pipeCollisionRight) {
-	  // 检测Y轴碰撞（顶部管道底部或底部管道顶部）
-	  if (birdY < topPipeCollisionBottom || birdY + birdHeight > bottomPipeCollisionTop) {
-		isGameOver = true;
-	  }
-	}
-  });
-}
+				// 检测X轴重叠
+				if (birdX + birdWidth > pipeCollisionLeft && birdX < pipeCollisionRight) {
+					// 检测Y轴碰撞（顶部管道底部或底部管道顶部）
+					if (birdY < topPipeCollisionBottom || birdY + birdHeight > bottomPipeCollisionTop) {
+						isGameOver = true;
+					}
+				}
+			});
+		}
 
 
 		// 更新游戏画面
@@ -190,4 +194,5 @@ function checkCollisions() {
 		updateGame();
 	</script>
 </body>
+
 </html>
