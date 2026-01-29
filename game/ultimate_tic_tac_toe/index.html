@@ -132,7 +132,189 @@
 			</div>
 		</div>
 	</div>
-	<script> class UltimateTicTacToe { constructor() { this.board = Array(9).fill().map(() => Array(9).fill(0)); this.judgeRes = Array(9).fill(0); this.judged = Array(9).fill(false); this.turn = 1; this.placeUnit = -1; this.gameOver = false; this.winPatterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]; this.init(); } init() { const t = document.getElementById("gameBoard"); t.innerHTML = ""; Array.from({ length: 9 }, (_, e) => { const n = document.createElement("div"); n.className = "board-unit bg-gray-50 rounded-lg p-2 border-2 border-gray-200"; n.dataset.unit = e; n.innerHTML = `<div class="grid grid-cols-3 gap-1">${Array.from({ length: 9 }, (_, t) => `<div class="cell aspect-square flex items-center justify-center text-2xl font-bold rounded cursor-pointer bg-white border border-gray-200"data-position="${t}"></div>`).join("")}</div>`; t.appendChild(n); n.querySelectorAll(".cell").forEach((t => { t.addEventListener("click", (() => { if (!this.gameOver) this.handleClick(e, parseInt(t.dataset.position)); })); })); }); document.getElementById("resetBtn").addEventListener("click", (() => { this.reset(); })); this.updateStatus(); } handleClick(t, e) { const n = Math.floor(t / 3) * 3 + Math.floor(e / 3); const i = (t % 3) * 3 + e % 3; const state = this.place(n, i); if (state !== 0) { this.showError(state); return; } const o = document.querySelector(`.board-unit[data-unit="${t}"]`); const r = o.querySelector(`.cell[data-position="${e}"]`); r.textContent = this.turn === 1 ? "O" : "X"; r.classList.add("occupied"); r.classList.add(this.turn === 1 ? "text-blue-600" : "text-red-600"); this.board[n][i] = this.turn; const [s, l] = this.judge(t); this.judged[t] = s; this.judgeRes[t] = l; if (s && l !== 0) { o.classList.add(l === 1 ? "win-o" : "win-x"); } else if (s && l === 0) { o.classList.add("win-draw"); } this.placeUnit = this.judged[this.getNextUnit(n, i)] ? -1 : this.getNextUnit(n, i); const a = this.gameJudge(); if (a !== 0) this.endGame(a); this.turn = -this.turn; this.updateStatus(); } place(t, e) { if (!(0 <= t && t <= 8 && 0 <= e && e <= 8)) return 1; if (this.placeUnit !== -1 && this.getUnit(t, e) !== this.placeUnit) return 4; if (this.board[t][e] !== 0) return 2; if (this.judgeRes[this.getUnit(t, e)] || this.judged[this.getUnit(t, e)]) return 3; return 0; } getUnit(t, e) { return Math.floor(t / 3) * 3 + Math.floor(e / 3); } getNextUnit(t, e) { return (t % 3) * 3 + (e % 3); } judge(t) { const e = Array(3).fill().map(() => Array(3).fill(0)); const n = Math.floor(t / 3) * 3; const i = (t % 3) * 3; for (let t = 0; t < 3; t++) for (let o = 0; o < 3; o++) e[t][o] = this.board[n + t][i + o]; for (let t = 0; t < 3; t++) if (e[t][0] !== 0 && e[t][0] === e[t][1] && e[t][1] === e[t][2]) return [true, e[t][0]]; for (let t = 0; t < 3; t++) if (e[0][t] !== 0 && e[0][t] === e[1][t] && e[1][t] === e[2][t]) return [true, e[0][t]]; if (e[0][0] !== 0 && e[0][0] === e[1][1] && e[1][1] === e[2][2]) return [true, e[0][0]]; if (e[0][2] !== 0 && e[0][2] === e[1][1] && e[1][1] === e[2][0]) return [true, e[0][2]]; let o = 0; for (let t = 0; t < 3; t++) for (let n = 0; n < 3; n++) if (e[t][n] !== 0) o++; return o === 9 ? [true, 0] : [false, 0]; } gameJudge() { const t = Array(3).fill().map(() => Array(3).fill(0)); for (let e = 0; e < 3; e++) for (let n = 0; n < 3; n++) t[e][n] = this.judged[3 * e + n] ? this.judgeRes[3 * e + n] : 0; for (let e = 0; e < 3; e++) if (t[e][0] !== 0 && t[e][0] === t[e][1] && t[e][1] === t[e][2]) return t[e][0]; for (let e = 0; e < 3; e++) if (t[0][e] !== 0 && t[0][e] === t[1][e] && t[1][e] === t[2][e]) return t[0][e]; if (t[0][0] !== 0 && t[0][0] === t[1][1] && t[1][1] === t[2][2]) return t[0][0]; if (t[0][2] !== 0 && t[0][2] === t[1][1] && t[1][1] === t[2][0]) return t[0][2]; let e = 0; for (let n = 0; n < 3; n++) for (let i = 0; i < 3; i++) if (t[n][i] !== 0) e++; return e === 9 ? 63 : 0; } updateStatus() { document.getElementById("playerSymbol").textContent = this.turn === 1 ? "O" : "X"; document.getElementById("playerSymbol").className = this.turn === 1 ? "text-blue-600" : "text-red-600"; const t = document.getElementById("gameStatus"); if (this.gameOver) return; t.textContent = this.placeUnit !== -1 ? `必须在${this.placeUnit + 1}区` : "可在任意区"; this.highlightAreas(); } highlightAreas() { document.querySelectorAll(".board-unit").forEach(((t, e) => { t.classList.remove("border-4", "border-indigo-500", "bg-indigo-50"); if ((this.placeUnit === -1 && !this.judged[e]) || (e === this.placeUnit && !this.judged[e])) { t.classList.add("border-4", "border-indigo-500", "bg-indigo-50"); } else { t.querySelectorAll(".cell").forEach(cell => { if (!cell.classList.contains('occupied')) { cell.classList.add('disabled'); } }); } })); } showError(t) { const e = { 1: "位置超限", 2: "已被占用", 3: "区域已完成", 4: "区域不符" }; const n = document.getElementById("gameStatus"); n.textContent = e[t]; n.className = "text-red-600 font-bold"; setTimeout((() => { this.updateStatus(); }), 2000); } endGame(t) { this.gameOver = true; const e = document.getElementById("gameStatus"); if (t === 63) { e.textContent = "平局!"; e.className = "text-green-600 font-bold"; document.querySelectorAll(".board-unit").forEach(unit => { if (!unit.classList.contains('win-o') && !unit.classList.contains('win-x')) { unit.classList.add("win-draw"); } }); this.showGameOverModal("游戏结束", "平局！无人获胜", "green"); } else { const winner = t === 1 ? "O" : "X"; const winnerClass = t === 1 ? "text-blue-600" : "text-red-600"; e.innerHTML = `玩家<span class="${winnerClass} font-bold text-2xl">${winner}</span>获胜!`; this.showGameOverModal("游戏结束", `玩家 ${winner} 获胜！`, t === 1 ? "blue" : "red"); } this.disableAllCells(); } showGameOverModal(title, message, color) { const overlay = document.createElement("div"); overlay.className = "game-over-overlay"; overlay.innerHTML = ` <div class="game-over-modal"> <h2 class="text-2xl font-bold mb-4">${title}</h2> <p class="text-lg mb-6 ${color === 'blue' ? 'text-blue-600' : color === 'red' ? 'text-red-600' : 'text-green-600'}">${message}</p> <button id="closeModal" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">确定</button> </div> `; document.body.appendChild(overlay); document.getElementById("closeModal").addEventListener("click", () => { document.body.removeChild(overlay); }); } disableAllCells() { document.querySelectorAll(".cell").forEach(cell => { cell.style.pointerEvents = "none"; }); } reset() { this.board = Array(9).fill().map(() => Array(9).fill(0)); this.judgeRes = Array(9).fill(0); this.judged = Array(9).fill(false); this.turn = 1; this.placeUnit = -1; this.gameOver = false; document.querySelectorAll(".cell").forEach((t => { t.textContent = ""; t.className = "cell aspect-square flex items-center justify-center text-2xl font-bold rounded cursor-pointer bg-white border border-gray-200"; t.style.pointerEvents = "auto"; })); document.querySelectorAll(".board-unit").forEach((t => { t.classList.remove("border-4", "border-green-500", "bg-green-50", "win-o", "win-x", "win-draw"); })); this.updateStatus(); } } new UltimateTicTacToe(); </script>
+	<script>
+		class UltimateTicTacToe {
+			constructor() {
+				this.board = Array(9).fill().map(() => Array(9).fill(0));
+				this.judgeRes = Array(9).fill(0);
+				this.judged = Array(9).fill(false);
+				this.turn = 1; this.placeUnit = -1;
+				this.gameOver = false;
+				this.winPatterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+				this.init();
+			}
+			init() {
+				const t = document.getElementById("gameBoard");
+				t.innerHTML = "";
+				Array.from({ length: 9 }, (_, e) => {
+					const n = document.createElement("div");
+					n.className = "board-unit bg-gray-50 rounded-lg p-2 border-2 border-gray-200";
+					n.dataset.unit = e;
+					n.innerHTML = `<div class="grid grid-cols-3 gap-1">${Array.from({ length: 9 }, (_, t) => `<div class="cell aspect-square flex items-center justify-center text-2xl font-bold rounded cursor-pointer bg-white border border-gray-200"data-position="${t}"></div>`).join("")}</div>`;
+					t.appendChild(n);
+					n.querySelectorAll(".cell").forEach((t => {
+						t.addEventListener("click", (() => {
+							if (!this.gameOver) this.handleClick(e, parseInt(t.dataset.position));
+						}));
+					}));
+				});
+				document.getElementById("resetBtn").addEventListener("click", (() => {
+					this.reset();
+				}));
+				this.updateStatus();
+			}
+			handleClick(t, e) {
+				const n = Math.floor(t / 3) * 3 + Math.floor(e / 3);
+				const i = (t % 3) * 3 + e % 3;
+				const state = this.place(n, i);
+				if (state !== 0) {
+					this.showError(state);
+					return;
+				}
+				const o = document.querySelector(`.board-unit[data-unit="${t}"]`);
+				const r = o.querySelector(`.cell[data-position="${e}"]`);
+				r.textContent = this.turn === 1 ? "O" : "X"; r.classList.add("occupied");
+				r.classList.add(this.turn === 1 ? "text-blue-600" : "text-red-600");
+				this.board[n][i] = this.turn;
+				const [s, l] = this.judge(t);
+				this.judged[t] = s;
+				this.judgeRes[t] = l;
+				if (s && l !== 0) {
+					o.classList.add(l === 1 ? "win-o" : "win-x");
+				} else if (s && l === 0) {
+					o.classList.add("win-draw");
+				}
+				this.placeUnit = this.judged[this.getNextUnit(n, i)] ? -1 : this.getNextUnit(n, i);
+				const a = this.gameJudge();
+				if (a !== 0) this.endGame(a);
+				this.turn = -this.turn;
+				this.updateStatus();
+			}
+			place(t, e) {
+				if (!(0 <= t && t <= 8 && 0 <= e && e <= 8)) return 1;
+				if (this.placeUnit !== -1 && this.getUnit(t, e) !== this.placeUnit) return 4;
+				if (this.board[t][e] !== 0) return 2;
+				if (this.judgeRes[this.getUnit(t, e)] || this.judged[this.getUnit(t, e)]) return 3;
+				return 0;
+			}
+			getUnit(t, e) {
+				return Math.floor(t / 3) * 3 + Math.floor(e / 3);
+			}
+			getNextUnit(t, e) {
+				return (t % 3) * 3 + (e % 3);
+			}
+			judge(t) {
+				const e = Array(3).fill().map(() => Array(3).fill(0));
+				const n = Math.floor(t / 3) * 3;
+				const i = (t % 3) * 3;
+				for (let t = 0; t < 3; t++)
+					for (let o = 0; o < 3; o++)
+						e[t][o] = this.board[n + t][i + o];
+				for (let t = 0; t < 3; t++)
+					if (e[t][0] !== 0 && e[t][0] === e[t][1] && e[t][1] === e[t][2]) return [true, e[t][0]];
+				for (let t = 0; t < 3; t++)
+					if (e[0][t] !== 0 && e[0][t] === e[1][t] && e[1][t] === e[2][t]) return [true, e[0][t]];
+				if (e[0][0] !== 0 && e[0][0] === e[1][1] && e[1][1] === e[2][2]) return [true, e[0][0]];
+				if (e[0][2] !== 0 && e[0][2] === e[1][1] && e[1][1] === e[2][0]) return [true, e[0][2]];
+				let o = 0;
+				for (let t = 0; t < 3; t++)
+					for (let n = 0; n < 3; n++)
+						if (e[t][n] !== 0) o++;
+				return o === 9 ? [true, 0] : [false, 0];
+			}
+			gameJudge() {
+				const t = Array(3).fill().map(() => Array(3).fill(0));
+				for (let e = 0; e < 3; e++)
+					for (let n = 0; n < 3; n++)
+						t[e][n] = this.judged[3 * e + n] ? this.judgeRes[3 * e + n] : 0;
+				for (let e = 0; e < 3; e++)
+					if (t[e][0] !== 0 && t[e][0] === t[e][1] && t[e][1] === t[e][2]) return t[e][0];
+				for (let e = 0; e < 3; e++)
+					if (t[0][e] !== 0 && t[0][e] === t[1][e] && t[1][e] === t[2][e]) return t[0][e];
+				if (t[0][0] !== 0 && t[0][0] === t[1][1] && t[1][1] === t[2][2]) return t[0][0];
+				if (t[0][2] !== 0 && t[0][2] === t[1][1] && t[1][1] === t[2][0]) return t[0][2];
+				let e = 0;
+				for (let n = 0; n < 3; n++)
+					for (let i = 0; i < 3; i++)
+						if (t[n][i] !== 0) e++; return e === 9 ? 63 : 0;
+			}
+			updateStatus() {
+				document.getElementById("playerSymbol").textContent = this.turn === 1 ? "O" : "X";
+				document.getElementById("playerSymbol").className = this.turn === 1 ? "text-blue-600" : "text-red-600";
+				const t = document.getElementById("gameStatus");
+				if (this.gameOver) return;
+				t.textContent = this.placeUnit !== -1 ? `必须在${this.placeUnit + 1}区` : "可在任意区"; this.highlightAreas();
+			}
+			highlightAreas() {
+				document.querySelectorAll(".board-unit").forEach(((t, e) => {
+					t.classList.remove("border-4", "border-indigo-500", "bg-indigo-50");
+					if ((this.placeUnit === -1 && !this.judged[e]) || (e === this.placeUnit && !this.judged[e])) {
+						t.classList.add("border-4", "border-indigo-500", "bg-indigo-50");
+					} else {
+						t.querySelectorAll(".cell").forEach(cell => {
+							if (!cell.classList.contains('occupied')) {
+								cell.classList.add('disabled');
+							}
+						});
+					}
+				}));
+			}
+			showError(t) {
+				const e = { 1: "位置超限", 2: "已被占用", 3: "区域已完成", 4: "区域不符" };
+				const n = document.getElementById("gameStatus");
+				n.textContent = e[t];
+				n.className = "text-red-600 font-bold";
+				setTimeout((() => { this.updateStatus(); }), 2000);
+			}
+			endGame(t) {
+				this.gameOver = true;
+				const e = document.getElementById("gameStatus");
+				if (t === 63) {
+					e.textContent = "平局!"; e.className = "text-green-600 font-bold";
+					document.querySelectorAll(".board-unit").forEach(unit => {
+						if (!unit.classList.contains('win-o') && !unit.classList.contains('win-x')) {
+							unit.classList.add("win-draw");
+						}
+					});
+					this.showGameOverModal("游戏结束", "平局！无人获胜", "green");
+				} else {
+					const winner = t === 1 ? "O" : "X";
+					const winnerClass = t === 1 ? "text-blue-600" : "text-red-600";
+					e.innerHTML = `玩家<span class="${winnerClass} font-bold text-2xl">${winner}</span>获胜!`;
+					this.showGameOverModal("游戏结束", `玩家 ${winner} 获胜！`, t === 1 ? "blue" : "red");
+				} this.disableAllCells();
+			}
+			showGameOverModal(title, message, color) {
+				const overlay = document.createElement("div");
+				overlay.className = "game-over-overlay";
+				overlay.innerHTML = ` <div class="game-over-modal"> <h2 class="text-2xl font-bold mb-4">${title}</h2> <p class="text-lg mb-6 ${color === 'blue' ? 'text-blue-600' : color === 'red' ? 'text-red-600' : 'text-green-600'}">${message}</p> <button id="closeModal" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">确定</button> </div> `;
+				document.body.appendChild(overlay);
+				document.getElementById("closeModal").addEventListener("click", () => { document.body.removeChild(overlay); });
+			}
+			disableAllCells() {
+				document.querySelectorAll(".cell").forEach(cell => { cell.style.pointerEvents = "none"; });
+			}
+			reset() {
+				this.board = Array(9).fill().map(() => Array(9).fill(0));
+				this.judgeRes = Array(9).fill(0);
+				this.judged = Array(9).fill(false);
+				this.turn = 1;
+				this.placeUnit = -1;
+				this.gameOver = false;
+				document.querySelectorAll(".cell").forEach((t => {
+					t.textContent = "";
+					t.className = "cell aspect-square flex items-center justify-center text-2xl font-bold rounded cursor-pointer bg-white border border-gray-200";
+					t.style.pointerEvents = "auto";
+				}));
+				document.querySelectorAll(".board-unit").forEach((t => {
+					t.classList.remove("border-4", "border-green-500", "bg-green-50", "win-o", "win-x", "win-draw");
+				}));
+				document.getElementById("gameStatus").className = "mt-2 text-gray-600";
+				this.updateStatus();
+			}
+		}
+		new UltimateTicTacToe();
+	</script>
 </body>
 
 </html>
