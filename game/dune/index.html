@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>沙丘 · Dune</title>
+<link rel="icon" type="image/x-icon" href="/totem.jpg">
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;padding:24px 16px 60px;
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  background:radial-gradient(circle at 50% 0%,#3d2b1a,#191210 72%);
+  color:#e8d9bf;min-height:100vh;
+}
+h1{font-size:22px;letter-spacing:10px;text-align:center;margin:0 0 6px;color:#e8c88a;font-weight:600}
+.sub{text-align:center;font-size:12px;color:#8a7a63;margin-bottom:22px;letter-spacing:2px}
+
+.full{max-width:920px;margin:0 auto 16px}
+.wrap{max-width:920px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.wrap{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:16px}
+
+.panel{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(232,200,138,.18);
+  border-radius:12px;padding:16px 18px;
+}
+.panel h2{font-size:12px;letter-spacing:3px;color:#c9a86a;margin:0 0 12px;font-weight:600}
+
+/* 规则列表 */
+.rules{list-style:none;padding:0;margin:0;font-size:13px;line-height:1.95}
+.rules li{color:#b8a888;padding-left:0}
+.rules li b{color:#e8c88a;font-weight:600}
+.rules .tag{
+  display:inline-block;min-width:76px;color:#e8c88a;
+  font-family:ui-monospace,Consolas,Menlo,monospace;font-weight:600;
+}
+.rules li.head{color:#9a8a70;margin-bottom:2px}
+
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(232,200,138,.12);font-size:14px}
+.row:last-child{border-bottom:none}
+.row b{color:#f0d9a8;font-weight:600}
+
+button{
+  font-family:inherit;cursor:pointer;
+  background:linear-gradient(180deg,#4a3a26,#33261a);
+  color:#e8d9bf;border:1px solid #6b5636;border-radius:8px;
+  padding:8px 14px;font-size:14px;margin:5px 5px 0 0;
+  transition:.15s;user-select:none;
+}
+button:hover:not(:disabled){background:linear-gradient(180deg,#5d4a30,#40301f);border-color:#a98c56;transform:translateY(-1px)}
+button:disabled{opacity:.3;cursor:not-allowed}
+
+.walkrow{margin-top:12px;padding-top:12px;border-top:1px solid rgba(232,200,138,.12)}
+.walkrow .lbl{font-size:12px;color:#9a8a70;letter-spacing:1px;display:block;margin-bottom:6px}
+.walkrow button{min-width:44px;font-variant-numeric:tabular-nums}
+.hint{font-size:12px;color:#8a7a63;margin-top:10px;font-style:italic}
+
+/* 设置行 */
+.cfgrow{display:flex;align-items:center;gap:8px;font-size:13px;color:#b8a888;margin-bottom:9px;flex-wrap:wrap}
+.cfgrow .lbl{width:58px;color:#9a8a70;flex:none}
+.cfgrow .tilde{color:#6b5636}
+.cfgmsg{font-size:12px;margin-top:8px;line-height:1.6;min-height:18px}
+.cfgmsg.err{color:#e08a6a}
+.cfgmsg.warn{color:#c9a86a}
+
+input[type=number]{
+  width:68px;background:#191210;border:1px solid #6b5636;color:#e8d9bf;
+  border-radius:6px;padding:7px 8px;font-size:14px;font-family:inherit;outline:none;
+}
+input[type=number]:focus{border-color:#a98c56}
+
+#log{height:300px;overflow-y:auto;font-size:13px;line-height:1.75;
+     font-family:ui-monospace,Consolas,Menlo,monospace}
+#log div{color:#b8a888;white-space:pre-wrap;word-break:break-word}
+#log div.hl{color:#e8c88a}
+#log div.err{color:#e08a6a}
+#log div.ok{color:#8fd18f}
+#log::-webkit-scrollbar{width:6px}
+#log::-webkit-scrollbar-thumb{background:#6b5636;border-radius:3px}
+#log::-webkit-scrollbar-track{background:transparent}
+
+.result{margin-top:12px;font-size:14px;min-height:22px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<a href="/" style="position: fixed;">
+  <img src="https://ekin12345.github.io/totem.jpg" style="width: 30px;height: 30px;">
+</a>
+
+<h1>沙 丘</h1>
+<div class="sub">D U N E &nbsp;·&nbsp; 探明洞穴与道路</div>
+
+<!-- ================= 规则 ================= -->
+<div class="full">
+  <div class="panel">
+    <h2>规 则</h2>
+    <ul class="rules">
+      <li class="head"><b>目标</b>：操作指针，用尽量少的步数探明这个迷宫共有多少个洞穴、多少条道路。</li>
+      <li class="head"><b>图的性质</b>：连通图，不保证无重边，不保证无自环，不保证是平面图。</li>
+      <li><span class="tag">look</span>查看当前结点：返回与它相连的边数，以及路标是否在此洞穴。</li>
+      <li><span class="tag">put_sign</span>在当前结点放上路标。仅当路标随身携带时可用。</li>
+      <li><span class="tag">take_sign</span>拿走当前结点的路标。仅当路标在此洞穴时可用。</li>
+      <li><span class="tag">walk i</span>沿着编号为 <b>i</b> 的边走到相邻结点，计 <b>1 步</b>。与某结点相连的 d 条边按逆时针顺序编号 0,1,…,d−1。走第一步时，编号 0 的边由游戏随机确定；以后，游戏会把「进入这个结点的那条边」编号为 0。</li>
+      <li><span class="tag">report n m</span>报告洞穴数 <b>n</b> 与道路数 <b>m</b>。正确即通关。</li>
+      <li class="head" style="margin-top:6px">洞穴数 n、道路数 m 的范围由你在下方「设置」中指定（需满足 <b>n ≥ 4</b>、<b>m ≥ n − 1</b>）。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="col">
+
+    <!-- ============ 设置 ============ -->
+    <div class="panel">
+      <h2>设 置</h2>
+      <div class="cfgrow">
+        <span class="lbl">洞穴 n</span>
+        <input type="number" id="nMin" min="4" max="20" value="4">
+        <span class="tilde">~</span>
+        <input type="number" id="nMax" min="4" max="20" value="7">
+      </div>
+      <div class="cfgrow">
+        <span class="lbl">道路 m</span>
+        <input type="number" id="mMin" min="0" max="100" value="4">
+        <span class="tilde">~</span>
+        <input type="number" id="mMax" min="0" max="100" value="12">
+      </div>
+      <div>
+        <button onclick="startWithConfig()">按此设置开始</button>
+      </div>
+      <div class="cfgmsg" id="cfgMsg"></div>
+    </div>
+
+    <!-- ============ 状态 ============ -->
+    <div class="panel">
+      <h2>状 态</h2>
+      <div id="status"></div>
+    </div>
+
+    <!-- ============ 操作 ============ -->
+    <div class="panel">
+      <h2>操 作</h2>
+      <div id="actions"></div>
+    </div>
+
+  </div>
+
+  <div class="col">
+
+    <div class="panel">
+      <h2>日 志</h2>
+      <div id="log"></div>
+    </div>
+
+    <div class="panel">
+      <h2>报 告</h2>
+      <div style="font-size:13px;color:#9a8a70;margin-bottom:10px">
+        这个迷宫共有多少个洞穴、多少条道路？
+      </div>
+      <div>
+        洞穴数 n = <input type="number" id="rn" min="1" placeholder="n">
+        &nbsp;道路数 m = <input type="number" id="rm" min="0" placeholder="m">
+      </div>
+      <div style="margin-top:6px">
+        <button onclick="doReport()">report</button>
+        <button onclick="startWithConfig()">重新开始</button>
+      </div>
+      <div class="result" id="result"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ==================== 工具 ==================== */
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* ==================== 随机连通图 ==================== */
+/* 给定 n 个结点、m 条边（m >= n-1），先生成随机树保证连通，
+   再随机补足剩余边（允许重边、自环）。 */
+function makeGraph(n, m){
+  const edges = [];
+
+  // 1) 随机生成树
+  for(let i=1;i<n;i++){
+    edges.push({u: Math.floor(Math.random()*i), v: i});
+  }
+  // 2) 随机补充边（可能重边、可能自环）
+  for(let k=n-1;k<m;k++){
+    edges.push({
+      u: Math.floor(Math.random()*n),
+      v: Math.floor(Math.random()*n)
+    });
+  }
+
+  // 3) 建立关联记录
+  const recs = [];
+  edges.forEach((e,i)=>{
+    const a = {node:e.u, other:e.v, edge:i};
+    const b = {node:e.v, other:e.u, edge:i};
+    a.pair = b; b.pair = a;
+    recs.push(a, b);                 // 自环时两条记录都挂在同一个结点上
+  });
+
+  const byNode = Array.from({length:n}, ()=>[]);
+  recs.forEach(r=> byNode[r.node].push(r));
+
+  // 4) 每个结点的边随机打乱（即随机的逆时针循环顺序），并编号
+  for(const arr of byNode){
+    shuffle(arr);
+    arr.forEach((r,idx)=>{ r.slot = idx; });
+  }
+
+  return {n, edges, byNode};
+}
+
+/* ==================== 配置与校验 ==================== */
+const nMinEl = document.getElementById('nMin');
+const nMaxEl = document.getElementById('nMax');
+const mMinEl = document.getElementById('mMin');
+const mMaxEl = document.getElementById('mMax');
+const cfgMsg = document.getElementById('cfgMsg');
+
+const N_MIN_LIMIT = 4;
+const N_MAX_LIMIT = 20;
+const M_MAX_LIMIT = 100;
+
+let curCfg = {nMin:4, nMax:7, mMin:4, mMax:12};
+
+function validateCfg(){
+  const v = {
+    nMin: parseInt(nMinEl.value, 10),
+    nMax: parseInt(nMaxEl.value, 10),
+    mMin: parseInt(mMinEl.value, 10),
+    mMax: parseInt(mMaxEl.value, 10),
+  };
+  for(const k in v){
+    if(isNaN(v[k])) return {ok:false, msg:'请把四个上下界都填成整数。'};
+  }
+  if(v.nMin < N_MIN_LIMIT)
+    return {ok:false, msg:`洞穴数下界至少为 ${N_MIN_LIMIT}。`};
+  if(v.nMax > N_MAX_LIMIT)
+    return {ok:false, msg:`洞穴数上界最多为 ${N_MAX_LIMIT}。`};
+  if(v.nMax < v.nMin)
+    return {ok:false, msg:'洞穴数上界不能小于下界。'};
+
+  if(v.mMin < v.nMin - 1)
+    return {ok:false, msg:`道路数下界至少为 ${v.nMin-1}：连通图至少要 n−1 条边。`};
+  if(v.mMax > M_MAX_LIMIT)
+    return {ok:false, msg:`道路数上界最多为 ${M_MAX_LIMIT}。`};
+  if(v.mMax < v.mMin)
+    return {ok:false, msg:'道路数上界不能小于下界。'};
+
+  return {ok:true, vals:v};
+}
+
+/* 选出本次要用的 (n, m) */
+function pickParams(cfg){
+  // n 必须满足 n-1 <= mMax，否则无可行 m
+  const hi = Math.min(cfg.nMax, cfg.mMax + 1);
+  const n  = cfg.nMin + Math.floor(Math.random() * (hi - cfg.nMin + 1));
+  const mLo = Math.max(cfg.mMin, n - 1);
+  const m   = mLo + Math.floor(Math.random() * (cfg.mMax - mLo + 1));
+  return {n, m};
+}
+
+/* ==================== 游戏状态 ==================== */
+let G;          // 图
+let pos;        // 指针所在结点
+let base;       // base[v]：结点 v 上「编号 0」对应的槽位下标
+let signAt;     // 路标所在结点（null 表示随身携带）
+let carried;    // 路标是否随身携带
+let steps;      // 步数
+let knownDeg;   // 当前结点已 look 过的边数（-1 表示未知）
+let finished;   // 是否已正确报告
+
+/* ==================== DOM ==================== */
+const statusEl  = document.getElementById('status');
+const actionsEl = document.getElementById('actions');
+const logEl     = document.getElementById('log');
+const resultEl  = document.getElementById('result');
+
+function addLog(msg, cls){
+  const d = document.createElement('div');
+  if(cls) d.className = cls;
+  d.textContent = msg;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ==================== 开新局 ==================== */
+function startWithConfig(){
+  const r = validateCfg();
+  if(!r.ok){
+    cfgMsg.className = 'cfgmsg err';
+    cfgMsg.textContent = '⚠ ' + r.msg;
+    return;
+  }
+  curCfg = r.vals;
+
+  // 非阻塞提示：道路上界过小会导致洞穴数被压缩
+  const hi = Math.min(curCfg.nMax, curCfg.mMax + 1);
+  cfgMsg.className = 'cfgmsg warn';
+  cfgMsg.textContent = hi < curCfg.nMax
+    ? `注：受道路数上界限制，实际洞穴数最多为 ${hi} 个。`
+    : '';
+
+  newGame();
+}
+
+function newGame(){
+  const p = pickParams(curCfg);
+
+  G        = makeGraph(p.n, p.m);
+  pos      = Math.floor(Math.random()*G.n);
+  base     = new Array(G.n).fill(0);
+  base[pos] = Math.floor(Math.random()*G.byNode[pos].length); // 起点的 0 号边随机
+  signAt   = null;
+  carried  = true;
+  steps    = 0;
+  knownDeg = -1;
+  finished = false;
+
+  logEl.innerHTML = '';
+  resultEl.textContent = '';
+  document.getElementById('rn').value = '';
+  document.getElementById('rm').value = '';
+
+  addLog('指针带着路标进入了沙丘。', 'hl');
+  addLog('先 look 看看当前洞穴的情况。');
+  render();
+}
+
+/* ==================== 五个操作 ==================== */
+function doLook(){
+  if(finished) return;
+  knownDeg = G.byNode[pos].length;
+  addLog(`look → 相连的边数 ${knownDeg}，路标 ${signAt===pos?'在此洞穴':'不在此洞穴'}`);
+  render();
+}
+
+function doPut(){
+  if(finished) return;
+  if(!carried){ addLog('路标不在身上，不能放置。', 'err'); return; }
+  carried = false;
+  signAt  = pos;
+  addLog('put_sign → 路标留在了当前洞穴。', 'hl');
+  render();
+}
+
+function doTake(){
+  if(finished) return;
+  if(signAt !== pos){ addLog('当前洞穴没有路标。', 'err'); return; }
+  signAt  = null;
+  carried = true;
+  addLog('take_sign → 取走路标。', 'hl');
+  render();
+}
+
+function doWalk(i){
+  if(finished) return;
+  if(knownDeg < 0){ addLog('请先 look 查看当前洞穴。', 'err'); return; }
+
+  const deg = G.byNode[pos].length;
+  if(i < 0 || i >= deg){ addLog('边编号非法。', 'err'); return; }
+
+  // 编号 i → 槽位 s
+  const s   = (base[pos] + i) % deg;
+  const rec = G.byNode[pos][s];
+
+  // 走过去；进入的边成为新位置的 0 号边
+  const from = pos;
+  pos = rec.other;
+  base[pos] = rec.pair.slot;
+
+  steps++;
+  knownDeg = -1;
+
+  if(from === pos){
+    addLog(`walk ${i} → 沿边回到原处（步数 ${steps}）`);
+  }else{
+    addLog(`walk ${i} → 走进相邻洞穴（步数 ${steps}）`);
+  }
+  render();
+}
+
+/* ==================== 报告 ==================== */
+function doReport(){
+  if(finished) return;
+  const n = parseInt(document.getElementById('rn').value, 10);
+  const m = parseInt(document.getElementById('rm').value, 10);
+
+  if(isNaN(n) || isNaN(m)){
+    resultEl.style.color = '#e08a6a';
+    resultEl.textContent = '请输入两个整数。';
+    return;
+  }
+
+  if(n === G.n && m === G.edges.length){
+    finished = true;
+    addLog(`report ${n} ${m} → 正确！`, 'ok');
+    resultEl.style.color = '#8fd18f';
+    resultEl.innerHTML =
+      `✅ 正确！这个迷宫共有 <b>${G.n}</b> 个洞穴、<b>${G.edges.length}</b> 条道路。<br>` +
+      `你一共走了 <b>${steps}</b> 步。`;
+    render();
+  }else{
+    addLog(`report ${n} ${m} → 错误`, 'err');
+    resultEl.style.color = '#e08a6a';
+    resultEl.textContent = '❌ 不对，再想想。';
+  }
+}
+
+/* ==================== 渲染 ==================== */
+function render(){
+  const deg = G.byNode[pos].length;
+
+  let signState;
+  if(signAt === null)      signState = '随身携带';
+  else if(signAt === pos)  signState = '当前洞穴';
+  else                     signState = '其他洞穴';
+
+  statusEl.innerHTML = `
+    <div class="row"><span>步数</span><b>${steps}</b></div>
+    <div class="row"><span>携带路标</span><b>${carried?'是':'否'}</b></div>
+    <div class="row"><span>路标位置</span><b>${signState}</b></div>
+    <div class="row"><span>当前洞穴的边数</span><b>${knownDeg>=0 ? deg : '未知'}</b></div>
+  `;
+
+  let html = '';
+  html += `<button onclick="doLook()" ${finished?'disabled':''}>look</button>`;
+  html += `<button onclick="doPut()"  ${(finished||!carried)?'disabled':''}>put_sign</button>`;
+  html += `<button onclick="doTake()" ${(finished||signAt!==pos)?'disabled':''}>take_sign</button>`;
+
+  if(!finished){
+    if(knownDeg >= 0){
+      html += `<div class="walkrow"><span class="lbl">walk —— 选择要走的边</span>`;
+      for(let i=0;i<deg;i++){
+        html += `<button onclick="doWalk(${i})">${i}</button>`;
+      }
+      html += `</div>`;
+    }else{
+      html += `<div class="hint">先调用 look 查看当前洞穴，才能选择要走的边。</div>`;
+    }
+  }
+
+  actionsEl.innerHTML = html;
+}
+
+/* ==================== 启动 ==================== */
+newGame();
+</script>
+</body>
+</html>
