@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<link rel="icon" type="image/x-icon" href="/totem.jpg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>沙丘 · Dune</title>
-<link rel="icon" type="image/x-icon" href="/totem.jpg">
 <style>
 *{box-sizing:border-box}
 body{
@@ -99,7 +99,7 @@ input[type=number]:focus{border-color:#a98c56}
     <h2>规 则</h2>
     <ul class="rules">
       <li class="head"><b>目标</b>：操作指针，用尽量少的步数探明这个迷宫共有多少个洞穴、多少条道路。</li>
-      <li class="head"><b>图的性质</b>：连通图，不保证无重边，不保证无自环，不保证是平面图。</li>
+      <li class="head"><b>图的性质</b>：连通图，不保证无重边，不保证是平面图，但保证无自环。</li>
       <li><span class="tag">look</span>查看当前结点：返回与它相连的边数，以及路标是否在此洞穴。</li>
       <li><span class="tag">put_sign</span>在当前结点放上路标。仅当路标随身携带时可用。</li>
       <li><span class="tag">take_sign</span>拿走当前结点的路标。仅当路标在此洞穴时可用。</li>
@@ -194,12 +194,14 @@ function makeGraph(n, m){
   for(let i=1;i<n;i++){
     edges.push({u: Math.floor(Math.random()*i), v: i});
   }
-  // 2) 随机补充边（可能重边、可能自环）
-  for(let k=n-1;k<m;k++){
-    edges.push({
-      u: Math.floor(Math.random()*n),
-      v: Math.floor(Math.random()*n)
-    });
+  // 2) 随机补充边（可能重边、不可能自环）
+  for(let k=n-1;k<m;){
+    const u = Math.floor(Math.random()*n);
+    const v = Math.floor(Math.random()*n);
+    if(u != v){
+      edges.push({u,v});
+      k++;
+    }
   }
 
   // 3) 建立关联记录
